@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "175532674018",
+    "firebase_url": "https://lokerin-189c8.firebaseio.com",
+    "project_id": "lokerin-189c8",
+    "storage_bucket": "lokerin-189c8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:175532674018:android:e447d5ee8c10ef694d07bb",
+        "android_client_info": {
+          "package_name": "com.example.loker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "175532674018-2ffe41mrj3c9lavao74mctlirpg9pbsi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.loker",
+            "certificate_hash": "ad80eab94aaf98de6111b49aaee7e327386f0e38"
+          }
+        },
+        {
+          "client_id": "175532674018-j7f2pqbg75pm1ksbpt87dg3k9m8gvlrj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBnUjHPqSeUs1UJTOeRZCmvT3F6Hnim8pc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "175532674018-j7f2pqbg75pm1ksbpt87dg3k9m8gvlrj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
