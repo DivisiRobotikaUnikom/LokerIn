@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".Fragment.Booking.BookingFragment">
 
     <!-- Note! jika ingin ditambah item (statis) dan bisa scroll ubah
@@ -36,13 +36,14 @@
 
             <TextView
                 android:id="@+id/tvBookingTitle"
-                android:text="My Booking"
-                android:textSize="28sp"
-                android:textColor="#FFFFFF"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="Daftar Stand"
+                android:textColor="#FFFFFF"
+                android:textSize="28sp" />
 
             <TextView
+                android:id="@+id/tvJumlah"
                 android:text="12 items"
                 android:textSize="14sp"
                 android:textColor="#FFFFFF"
@@ -50,247 +51,24 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/tvBookingTitle"/>
 
-            <ImageView
-                android:layout_alignParentRight="true"
-                android:src="@drawable/userpic"
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/ivUser"
                 android:layout_width="62dp"
-                android:layout_height="62dp" />
+                android:layout_height="62dp"
+                app:civ_border_color="#000"
+                app:civ_border_width="1dp"
+                android:layout_alignParentRight="true"
+                android:src="@drawable/ic_person_black_24dp"/>
 
         </RelativeLayout>
 
-        <GridLayout
-            android:columnCount="2"
-            android:rowCount="5"
-            android:alignmentMode="alignMargins"
-            android:columnOrderPreserved="false"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/myStand"
+            android:layout_marginTop="75dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp"
-                >
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:src="@drawable/icvip"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp" />
-
-                    <TextView
-                        android:layout_marginTop="12dp"
-                        android:textColor="#6F6F6F"
-                        android:textSize="14sp"
-                        android:text="Loker 1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp"
-                >
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:src="@drawable/icvip"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp" />
-
-                    <TextView
-                        android:layout_marginTop="12dp"
-                        android:textColor="#6F6F6F"
-                        android:textSize="14sp"
-                        android:text="Loker 2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp"
-                >
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:src="@drawable/icvip"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp" />
-
-                    <TextView
-                        android:layout_marginTop="12dp"
-                        android:textColor="#6F6F6F"
-                        android:textSize="14sp"
-                        android:text="Loker 3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp"
-                >
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:src="@drawable/icvip"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp" />
-
-                    <TextView
-                        android:layout_marginTop="12dp"
-                        android:textColor="#6F6F6F"
-                        android:textSize="14sp"
-                        android:text="Loker 4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp"
-                >
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:src="@drawable/icvip"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp" />
-
-                    <TextView
-                        android:layout_marginTop="12dp"
-                        android:textColor="#6F6F6F"
-                        android:textSize="14sp"
-                        android:text="Loker 5"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <TextView
-                        android:textSize="12sp"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="italic"
-                        android:layout_marginTop="3dp"
-                        android:text=" Booking Now! "
-                        android:background="@drawable/bgbookingnow"
-                        android:layout_width="wrap_content"
-                        android:layout_height="18dp" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_columnWeight="1"
-                android:layout_rowWeight="1"
-                app:cardElevation="6dp"
-                app:cardCornerRadius="12dp"
-                android:layout_margin="12dp"
-                >
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:gravity="center"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:src="@drawable/icvip"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp" />
-
-                    <TextView
-                        android:layout_marginTop="12dp"
-                        android:textColor="#6F6F6F"
-                        android:textSize="14sp"
-                        android:text="Loker 6"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <TextView
-                        android:textSize="12sp"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="italic"
-                        android:layout_marginTop="3dp"
-                        android:text=" Booking Now! "
-                        android:background="@drawable/bgbookingnow"
-                        android:layout_width="wrap_content"
-                        android:layout_height="18dp" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-        </GridLayout>
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 

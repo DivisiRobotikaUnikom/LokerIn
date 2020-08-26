@@ -8,25 +8,24 @@
     tools:context=".Fragment.Home.HomeFragment">
 
     <!-- TODO: Update blank fragment layout -->
+
     <View
         android:id="@+id/vHeader"
-        android:background="@drawable/bgheader"
         android:layout_width="match_parent"
         android:layout_height="160dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="0dp"
+        android:background="@drawable/bgheader"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/ivUser"
         android:layout_width="71dp"
         android:layout_height="71dp"
+        app:civ_border_color="#000"
+        app:civ_border_width="1dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="26dp"
-        android:src="@drawable/userpic"
+        android:src="@drawable/ic_person_black_24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginLeft="16dp" />
@@ -35,40 +34,40 @@
         android:id="@+id/tvDay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginLeft="100dp"
+        android:layout_marginTop="26dp"
         android:text="DAY"
         android:textColor="#FFFFFF"
         android:textSize="28sp"
-        app:layout_constraintStart_toEndOf="@+id/ivUser"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginLeft="18dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginLeft="100dp"
         android:layout_marginTop="5dp"
         android:text="Good Morning, David"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
-        app:layout_constraintStart_toEndOf="@+id/ivUser"
-        app:layout_constraintTop_toBottomOf="@+id/tvDay"
-        android:layout_marginLeft="17dp" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvDay" />
 
     <TextView
         android:id="@+id/tvDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="38dp"
         android:text="Date"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/tvDay"
-        android:layout_marginLeft="18dp" />
+        app:layout_constraintStart_toEndOf="@+id/tvDay"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/ivGuide"

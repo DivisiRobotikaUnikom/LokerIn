@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -49,15 +50,8 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_account, container, false);
-    }
+        final View root = inflater.inflate(R.layout.fragment_account, container, false);
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        btnLogout = getView().findViewById(R.id.btnLogout);
-        btnLogout.setOnClickListener(this);
         DatabaseInit db = new DatabaseInit();
         db.users.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -65,8 +59,7 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                 DatabaseInit db = new DatabaseInit();
                 FirebaseUser user = db.mAuth.getCurrentUser();
                 String url = dataSnapshot.child(user.getUid()).child("profile").getValue().toString();
-                Log.d("TAG", url);
-                ImageView img = getView().findViewById(R.id.image_profile);
+                ImageView img = root.findViewById(R.id.image_profile);
                 Picasso.with(img.getContext()).load(url).placeholder(R.drawable.ic_person_black_24dp).into(img);
             }
 
@@ -75,6 +68,8 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
 
             }
         });
+        // Inflate the layout for this fragment
+        return root;
     }
 
     public void onClick(View view) {

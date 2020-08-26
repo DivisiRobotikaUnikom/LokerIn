@@ -12,9 +12,11 @@ public class DatabaseInit {
 
     //Database
     public FirebaseDatabase database;
-    public DatabaseReference root;
     public DatabaseReference pegawai;
     public DatabaseReference users;
+    public DatabaseReference stand;
+    public DatabaseReference booking;
+    public DatabaseReference daftar;
 
     //User
     public FirebaseUser user;
@@ -22,9 +24,11 @@ public class DatabaseInit {
     public DatabaseInit() {
         database = FirebaseDatabase.getInstance();
         mAuth = FirebaseAuth.getInstance();
-//        user = mAuth.getCurrentUser();
 
         pegawai = database.getReference("pegawai");
+        booking = database.getReference("booking");
         users = database.getReference("user");
+        stand = database.getReference("stand");
+        daftar = database.getReference("daftar");
     }
 }

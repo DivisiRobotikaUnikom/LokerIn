@@ -3,6 +3,8 @@ package com.example.loker.Fragment.Home;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -15,7 +17,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.loker.Database.DatabaseInit;
 import com.example.loker.R;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
+import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -36,7 +44,24 @@ public class HomeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View root = inflater.inflate(R.layout.fragment_home2, container, false);
+        final View root = inflater.inflate(R.layout.fragment_home2, container, false);
+
+        DatabaseInit db = new DatabaseInit();
+        db.users.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                DatabaseInit db = new DatabaseInit();
+                FirebaseUser user = db.mAuth.getCurrentUser();
+                String url = dataSnapshot.child(user.getUid()).child("profile").getValue().toString();
+                ImageView img = root.findViewById(R.id.ivUser);
+                Picasso.with(img.getContext()).load(url).placeholder(R.drawable.ic_person_black_24dp).into(img);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         // Get time now in HomeFragment
         tvDay = root.findViewById(R.id.tvDay);
@@ -46,7 +71,6 @@ public class HomeFragment extends Fragment {
         final Date date;
         Calendar cal = Calendar.getInstance();
 
-        Log.d("date", String.valueOf(new Date()));
         SimpleDateFormat sdf = new SimpleDateFormat("HH");
         DateFormat dateFormat = new SimpleDateFormat("d MMM yyyy");
 
@@ -75,21 +99,20 @@ public class HomeFragment extends Fragment {
         }
 
         // Get animation
-//        alfatogo = AnimationUtils.loadAnimation(this, R.anim.alfatogo);
-//        alfatogotwo = AnimationUtils.loadAnimation(this, R.anim.alfatogotwo);
-//        alfatogothree = AnimationUtils.loadAnimation(this, R.anim.alfatogothree);
-//
-//        tvGuideTitle = root.findViewById(R.id.tvGuideTitle);
-//        tvGuideSubTitle = root.findViewById(R.id.tvGuideSubtitle);
-//        ivGuide = root.findViewById(R.id.ivGuide);
-//        btnGuide = root.findViewById(R.id.btnGuide);
-//
-//        ivGuide.startAnimation(alfatogo);
-//        tvGuideTitle.startAnimation(alfatogotwo);
-//        tvGuideSubTitle.startAnimation(alfatogotwo);
-//        btnGuide.startAnimation(alfatogothree);
+        alfatogo = AnimationUtils.loadAnimation(getContext(), R.anim.alfatogo);
+        alfatogotwo = AnimationUtils.loadAnimation(getContext(), R.anim.alfatogotwo);
+        alfatogothree = AnimationUtils.loadAnimation(getContext(), R.anim.alfatogothree);
+
+        tvGuideTitle = root.findViewById(R.id.tvGuideTitle);
+        tvGuideSubTitle = root.findViewById(R.id.tvGuideSubtitle);
+        ivGuide = root.findViewById(R.id.ivGuide);
+        btnGuide = root.findViewById(R.id.btnGuide);
+
+        ivGuide.startAnimation(alfatogo);
+        tvGuideTitle.startAnimation(alfatogotwo);
+        tvGuideSubTitle.startAnimation(alfatogotwo);
+        btnGuide.startAnimation(alfatogothree);
 
         return root;
     }
-
 }
