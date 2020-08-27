@@ -59,8 +59,8 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                 DatabaseInit db = new DatabaseInit();
                 FirebaseUser user = db.mAuth.getCurrentUser();
                 String url = dataSnapshot.child(user.getUid()).child("profile").getValue().toString();
-                ImageView img = root.findViewById(R.id.image_profile);
-                Picasso.with(img.getContext()).load(url).placeholder(R.drawable.ic_person_black_24dp).into(img);
+                //ImageView img = root.findViewById(R.id.image_profile);
+                //Picasso.with(img.getContext()).load(url).placeholder(R.drawable.ic_person_black_24dp).into(img);
             }
 
             @Override

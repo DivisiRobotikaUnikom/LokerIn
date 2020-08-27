@@ -112,6 +112,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             GoogleSignInAccount acc = completedTask.getResult(ApiException.class);
             FirebaseGoogleAuth(acc);
         } catch (ApiException e) {
+            Log.d("test", String.valueOf(e));
             FirebaseGoogleAuth(null);
         }
     }
