@@ -3,7 +3,10 @@ package com.example.loker.Adapter;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,18 +15,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.loker.Database.DatabaseInit;
 import com.example.loker.Fragment.Booking.BookingFragment;
 import com.example.loker.Fragment.Booking.BookingLokerFragment;
+import com.example.loker.Fragment.Home.HomeFragment;
 import com.example.loker.MainActivity;
 import com.example.loker.Model.LokerModel;
 import com.example.loker.R;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class LokerAdapter extends RecyclerView.Adapter<LokerAdapter.MyViewHolder> {
 
@@ -51,8 +57,10 @@ public class LokerAdapter extends RecyclerView.Adapter<LokerAdapter.MyViewHolder
             status = "Available";
         } else if (myStand.get(position).getStatus().equals("not available")) {
             status = "Not Available";
+            holder.cvLoker.setCardBackgroundColor(ColorStateList.valueOf(Color.RED));
         } else if (myStand.get(position).getStatus().equals("booked")) {
             status = "Booked";
+            holder.cvLoker.setCardBackgroundColor(ColorStateList.valueOf(Color.GRAY));
         }
         holder.tvStatus.setText(status);
 
@@ -72,17 +80,18 @@ public class LokerAdapter extends RecyclerView.Adapter<LokerAdapter.MyViewHolder
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 DatabaseInit db = new DatabaseInit();
                                 FirebaseUser user = db.mAuth.getCurrentUser();
-                                Long ts = System.currentTimeMillis()/1000;
-                                String tss = ts.toString();
+                                Calendar calendar = Calendar.getInstance();
+                                String tss = DateFormat.format("EEE, dd-MM-yyyy HH:mm:ss", calendar.getTime()).toString();
+                                String ts = Long.toString(System.currentTimeMillis() * 1000);
 
                                 String[] stand = res.split("\\s+");
                                 String[] loker = holder.tvId.getText().toString().split("\\s+");
 
-                                db.booking.child(user.getUid() + tss).child("uid").setValue(user.getUid());
-                                db.booking.child(user.getUid() + tss).child("stand").setValue("stand" + stand[1]);
-                                db.booking.child(user.getUid() + tss).child("loker").setValue(loker[1]);
-                                db.booking.child(user.getUid() + tss).child("status").setValue("Booking");
-                                db.booking.child(user.getUid() + tss).child("time").setValue(tss);
+                                db.booking.child(user.getUid() + ts).child("uid").setValue(user.getUid());
+                                db.booking.child(user.getUid() + ts).child("stand").setValue("stand" + stand[1]);
+                                db.booking.child(user.getUid() + ts).child("loker").setValue(loker[1]);
+                                db.booking.child(user.getUid() + ts).child("status").setValue("Booking");
+                                db.booking.child(user.getUid() + ts).child("time").setValue(tss);
 
                                 db.stand.child("stand" + stand[1]).child(loker[1]).child("status").setValue("booked");
 
@@ -128,11 +137,13 @@ public class LokerAdapter extends RecyclerView.Adapter<LokerAdapter.MyViewHolder
     class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView tvId, tvStatus;
+        CardView cvLoker;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             tvId = itemView.findViewById(R.id.tvId);
             tvStatus = itemView.findViewById(R.id.tvStatus);
+            cvLoker = itemView.findViewById(R.id.cvLoker);
         }
     }
 }

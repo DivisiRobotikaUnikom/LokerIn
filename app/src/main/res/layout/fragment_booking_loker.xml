@@ -38,13 +38,12 @@
                 android:id="@+id/tvBookingTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Booking Loker"
+                android:text="Daftar Loker"
                 android:textColor="#FFFFFF"
                 android:textSize="28sp" />
 
             <TextView
                 android:id="@+id/tvJumlah"
-                android:text="12 items"
                 android:textSize="14sp"
                 android:textColor="#FFFFFF"
                 android:layout_width="wrap_content"
@@ -62,9 +61,22 @@
 
         </RelativeLayout>
 
+        <Button
+            android:id="@+id/btnMaps"
+            android:layout_marginTop="70dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shapelocation"
+            android:drawableLeft="@mipmap/location"
+            android:layout_marginLeft="35dp"
+            android:layout_marginRight="35dp"
+            android:text="Location in Google Maps"
+            android:padding="15dp"
+            android:shadowColor="@android:color/transparent"/>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/myStand"
-            android:layout_marginTop="75dp"
+            android:layout_marginTop="10dp"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:layout_width="match_parent"

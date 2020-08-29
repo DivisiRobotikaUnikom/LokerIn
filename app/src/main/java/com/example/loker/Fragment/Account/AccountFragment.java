@@ -1,6 +1,7 @@
 package com.example.loker.Fragment.Account;
 
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.loker.Database.DatabaseInit;
 import com.example.loker.Fragment.Auth.LoginActivity;
@@ -45,12 +48,18 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
 
     UserModel userModel = new UserModel();
     private GoogleSignInClient mGoogleSignClient;
-    Button btnLogout;
+    Button btnLogout, btnMyLoker, btnEditProfile;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         final View root = inflater.inflate(R.layout.fragment_account, container, false);
+        btnLogout = root.findViewById(R.id.btnLogout);
+        btnMyLoker = root.findViewById(R.id.btnMyLoker);
+        btnEditProfile = root.findViewById(R.id.btnEditProfile);
+        btnLogout.setOnClickListener(this);
+        btnMyLoker.setOnClickListener(this);
+        btnEditProfile.setOnClickListener(this);
 
         DatabaseInit db = new DatabaseInit();
         db.users.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -59,8 +68,11 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
                 DatabaseInit db = new DatabaseInit();
                 FirebaseUser user = db.mAuth.getCurrentUser();
                 String url = dataSnapshot.child(user.getUid()).child("profile").getValue().toString();
-                //ImageView img = root.findViewById(R.id.image_profile);
-                //Picasso.with(img.getContext()).load(url).placeholder(R.drawable.ic_person_black_24dp).into(img);
+                ImageView img = root.findViewById(R.id.myPict);
+                Picasso.with(img.getContext()).load(url).placeholder(R.drawable.ic_person_black_24dp).into(img);
+
+                TextView tvNama = root.findViewById(R.id.tvNama);
+                tvNama.setText(dataSnapshot.child(user.getUid()).child("nama").getValue().toString());
             }
 
             @Override
@@ -73,14 +85,32 @@ public class AccountFragment extends Fragment implements View.OnClickListener {
     }
 
     public void onClick(View view) {
-        DatabaseInit db = new DatabaseInit();
-        db.mAuth.signOut();
-        GoogleSignIn.getClient(
-                getContext(),
-                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-        ).signOut();
-        startActivity(new Intent(getActivity(), LoginActivity.class));
-        getActivity().finish();
+        int id = view.getId();
+        if (id == R.id.btnLogout) {
+            new android.app.AlertDialog.Builder(view.getContext())
+                    .setTitle("Konfirmasi Logout")
+                    .setMessage("Yakin ingin logout?")
+                    .setCancelable(false)
+                    .setPositiveButton("Logout", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            DatabaseInit db = new DatabaseInit();
+                            db.mAuth.signOut();
+                            GoogleSignIn.getClient(
+                                    getContext(),
+                                    new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+                            ).signOut();
+                            startActivity(new Intent(getActivity(), LoginActivity.class));
+                            getActivity().finish();
+                            Toast.makeText(getContext(), "Logout Success!", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Batal", null).show();
+        } else if (id == R.id.btnMyLoker) {
+            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new MyLokerFragment()).addToBackStack(null).commit();
+        } else if (id == R.id.btnEditProfile) {
+            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new EditProfileFragment()).addToBackStack(null).commit();
+        }
     }
 }
 

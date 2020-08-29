@@ -1,12 +1,15 @@
 package com.example.loker.Fragment.Booking;
 
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -28,22 +31,26 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class BookingLokerFragment extends Fragment {
+public class BookingLokerFragment extends Fragment implements View.OnClickListener {
 
     RecyclerView myStand;
     ArrayList<LokerModel> list;
     LokerAdapter standAdapter;
+    Button btnMaps;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        final View root = inflater.inflate(R.layout.fragment_booking, container, false);
+        final View root = inflater.inflate(R.layout.fragment_booking_loker, container, false);
+        btnMaps = root.findViewById(R.id.btnMaps);
+        btnMaps.setOnClickListener(this);
 
         DatabaseInit db = new DatabaseInit();
         db.users.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -68,7 +75,6 @@ public class BookingLokerFragment extends Fragment {
         list = new ArrayList<LokerModel>();
 
         final String res = getArguments().getString("nama");
-        final String result = getArguments().getString("status");
 
         db.stand.addValueEventListener(new ValueEventListener() {
             @Override
@@ -100,5 +106,35 @@ public class BookingLokerFragment extends Fragment {
         });
         // Inflate the layout for this fragment
         return root;
+    }
+
+    public void onClick(View view) {
+        DatabaseInit db = new DatabaseInit();
+        db.stand.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String[] res = getArguments().getString("nama").split("\\s+");
+                String stand = res[0].toLowerCase() + res[1];
+                String coordinates = dataSnapshot.child(stand).child("coordinates").getValue().toString();
+                String[] name = dataSnapshot.child(stand).child("lokasi").getValue().toString().split("\\s+");
+                String val = "";
+                for (int i = 0; i < name.length; i++) {
+                    if (i < name.length - 1) {
+                        val = val + name[i] + "+";
+                    } else {
+                        val = val + name[i];
+                    }
+                }
+                Uri gmmIntentUri = Uri.parse("geo:" + coordinates + "?q=" + val);
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 }

@@ -12,6 +12,7 @@ import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -35,12 +36,13 @@ import com.luseen.spacenavigation.SpaceNavigationView;
 import com.luseen.spacenavigation.SpaceOnClickListener;
 import com.squareup.picasso.Picasso;
 
+import java.util.Calendar;
+
 public class MainActivity extends FragmentActivity {
 
     private boolean exit = false;
     private boolean click = false;
     SpaceNavigationView nav;
-    private int count;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +105,7 @@ public class MainActivity extends FragmentActivity {
         int count = getSupportFragmentManager().getBackStackEntryCount();
         if (count == 0) {
             new android.app.AlertDialog.Builder(this)
+                    .setTitle("Konfirmasi Keluar Aplikasi")
                     .setMessage("Yakin ingin keluar?")
                     .setCancelable(false)
                     .setPositiveButton("Keluar", new DialogInterface.OnClickListener() {
@@ -132,7 +135,8 @@ public class MainActivity extends FragmentActivity {
         if (result != null) {
             if (result.getContents() != null) {
                 DatabaseInit db = new DatabaseInit();
-                db.booking.addValueEventListener(new ValueEventListener() {
+
+                db.booking.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -140,9 +144,9 @@ public class MainActivity extends FragmentActivity {
                         boolean datang = false;
                         String loker = "";
                         int i = 0;
+                        long count = dataSnapshot.getChildrenCount();
 
                         if (click == true) {
-                            count = 0;
                             for (DataSnapshot ds : dataSnapshot.getChildren()) {
                                 i++;
                                 DatabaseInit db = new DatabaseInit();
@@ -152,37 +156,21 @@ public class MainActivity extends FragmentActivity {
                                     String[] res = result.getContents().split("\\s+");
                                     String stand = res[0].toLowerCase() + res[1];
 
-                                    db.booking.child(ds.getKey()).child(user.getUid()).addValueEventListener(new ValueEventListener() {
-                                        @Override
-                                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                            count++;
-                                        }
-
-                                        @Override
-                                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                                        }
-                                    });
-
                                     if (stand.equals(ds.child("stand").getValue().toString())) {
                                         if (ds.child("status").getValue().toString().equals("Datang")) {
                                             if (i == count) {
                                                 hitung = 1;
-                                                datang = false;
-                                            } else {
                                                 datang = true;
-                                                loker = ds.child("loker").getValue().toString();
-                                                hitung = 4;
                                             }
-
-                                        } else {
-                                            if (ds.child("status").getValue().equals("Booking")) {
+                                        } else if (ds.child("status").getValue().equals("Booking")) {
                                                 datang = true;
                                                 hitung = 4;
                                                 loker = ds.child("loker").getValue().toString();
                                                 db.daftar.child(ds.child("stand").getValue().toString()).child("id").setValue(ds.child("loker").getValue().toString());
                                                 db.booking.child(ds.getKey()).child("status").setValue("Datang");
-                                            }
+                                                Calendar calendar = Calendar.getInstance();
+                                                String tss = DateFormat.format("EEE, dd-MM-yyyy HH:mm:ss", calendar.getTime()).toString();
+                                                db.booking.child(ds.getKey()).child("time").setValue(tss);
                                         }
                                     } else {
                                         if (datang == false) {

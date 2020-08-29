@@ -30,6 +30,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private DatabaseInit db = new DatabaseInit();
@@ -38,8 +41,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     //Inisialisasi Google Sign In
     private GoogleSignInClient mGoogleSignClient;
     private int RC_SIGN_IN = 1;
-
-    private int count;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,31 +56,33 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //set on click untuk btn
         btnLogin.setOnClickListener(LoginActivity.this);
 
-        db.mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if (firebaseAuth.getCurrentUser() != null && getCount() == 1) {
-                    finish();
-                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                    setCount(0);
+        final FirebaseUser user = db.mAuth.getCurrentUser();
+        ProgressDialog.show(this, "Loading", "Harap menunggu...");
+        if (user != null) {
+            db.users.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.hasChild("status")) {
+                        finish();
+                        startActivity(new Intent(LoginActivity.this, GuideActivity.class));
+                    } else {
+                        finish();
+                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    }
                 }
-            }
-        };
-    }
 
-    public int getCount() {
-        return count;
-    }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-    public void setCount(int count) {
-        this.count = count;
+                }
+            });
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        db.mAuth.addAuthStateListener(db.mAuthListener);
-        setCount(1);
+//        setCount(1);
     }
 
     @Override
@@ -112,7 +115,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             GoogleSignInAccount acc = completedTask.getResult(ApiException.class);
             FirebaseGoogleAuth(acc);
         } catch (ApiException e) {
-            Log.d("test", String.valueOf(e));
             FirebaseGoogleAuth(null);
         }
     }
@@ -123,15 +125,37 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             db.mAuth.signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
-                    int i = 1;
                     if (task.isSuccessful()) {
-                        Toast.makeText(LoginActivity.this, "Success", Toast.LENGTH_SHORT).show();
-                        FirebaseUser user = db.mAuth.getCurrentUser();
+                        Toast.makeText(LoginActivity.this, "Login Success", Toast.LENGTH_SHORT).show();
+                        final FirebaseUser user = db.mAuth.getCurrentUser();
 
-                        db.users.child(user.getUid()).child("uid").setValue(user.getUid());
-                        db.users.child(user.getUid()).child("nama").setValue(user.getDisplayName());
-                        db.users.child(user.getUid()).child("email").setValue(user.getEmail());
-                        db.users.child(user.getUid()).child("profile").setValue(user.getPhotoUrl().toString());
+                        db.users.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                db.users.child(user.getUid()).child("uid").setValue(user.getUid());
+                                db.users.child(user.getUid()).child("nama").setValue(user.getDisplayName());
+                                db.users.child(user.getUid()).child("email").setValue(user.getEmail());
+                                db.users.child(user.getUid()).child("profile").setValue(user.getPhotoUrl().toString());
+
+                                if (!dataSnapshot.hasChild(user.getUid())) {
+                                    db.users.child(user.getUid()).child("status").setValue("Baru");
+                                    finish();
+                                    startActivity(new Intent(LoginActivity.this, GuideActivity.class));
+                                } else if(dataSnapshot.child(user.getUid()).hasChild("status")) {
+                                    finish();
+                                    startActivity(new Intent(LoginActivity.this, GuideActivity.class));
+                                } else {
+                                    finish();
+                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+
+                        });
                     } else {
                         Toast.makeText(LoginActivity.this, "Failed", Toast.LENGTH_SHORT).show();
                     }
@@ -147,6 +171,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onBackPressed() {
         new AlertDialog.Builder(this)
+                .setTitle("Konfirmasi Keluar Aplikasi")
                 .setMessage("Yakin ingin keluar?")
                 .setCancelable(false)
                 .setPositiveButton("Keluar", new DialogInterface.OnClickListener() {

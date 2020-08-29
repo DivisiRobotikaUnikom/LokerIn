@@ -34,7 +34,9 @@
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:layout_marginTop="100dp"
-        android:src="@drawable/userpic" />
+        android:src="@drawable/ic_person_black_24dp"
+        app:civ_border_color="#000"
+        app:civ_border_width="1dp" />
 
     <TextView
         android:id="@+id/tvNama"
@@ -43,8 +45,8 @@
         android:layout_below="@id/myPict"
         android:textSize="18sp"
         android:layout_marginTop="10dp"
-        android:text="David Aditya Winarto"
-        android:gravity="center" />
+        android:gravity="center"
+        android:textColor="#000000"/>
 
 <!--Pilih aja cil yg kira kira cocok   -->
     <LinearLayout
@@ -53,21 +55,7 @@
         android:layout_marginLeft="80dp"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <EditText
-            android:id="@+id/myName"
-            android:inputType="text"
-            android:paddingLeft="12dp"
-            android:textColorHint="#B5B5B5"
-            android:textColor="#000000"
-            android:hint="David Aditya Winarto"
-            android:textSize="16sp"
-            android:gravity="center"
-            android:layout_below="@id/myPict"
-            android:layout_width="match_parent"
-            android:layout_height="55dp" />
-    </LinearLayout>
+        android:layout_height="wrap_content"/>
 
     <Button
         android:id="@+id/btnMyLoker"

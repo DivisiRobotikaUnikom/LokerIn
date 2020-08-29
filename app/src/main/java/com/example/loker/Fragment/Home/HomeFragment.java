@@ -6,7 +6,10 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +20,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.loker.Adapter.HomeAdapter;
 import com.example.loker.Database.DatabaseInit;
+import com.example.loker.Model.HomeModel;
 import com.example.loker.R;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -26,19 +31,24 @@ import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class HomeFragment extends Fragment {
 
-    TextView tvDay, tvWelcome, tvDate, tvGuideTitle, tvGuideSubTitle;
-    Button btnGuide;
-    ImageView ivGuide;
-    Animation alfatogo, alfatogotwo, alfatogothree;
+    TextView tvDay, tvWelcome, tvDate;
+    RecyclerView myHome;
+    ArrayList<HomeModel> list;
+    HomeAdapter homeAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -63,26 +73,70 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        myHome = root.findViewById(R.id.myBooking);
+        myHome.setLayoutManager(new LinearLayoutManager(getActivity()));
+        list = new ArrayList<HomeModel>();
+
+        db.booking.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    DatabaseInit db = new DatabaseInit();
+                    FirebaseUser user = db.mAuth.getCurrentUser();
+                    if (ds.child("uid").getValue().toString().equals(user.getUid()) && ds.child("status").getValue().toString().equals("Booking")) {
+                        try {
+                            String[] date = ds.child("time").getValue().toString().split("\\s+");
+                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+                            Calendar calendar = Calendar.getInstance();
+                            String tss = android.text.format.DateFormat.format("HH:mm:ss", calendar.getTime()).toString();
+                            Date mDate = simpleDateFormat.parse(date[2]);
+                            Date timeNow = simpleDateFormat.parse(tss);
+                            long mTimeLeftInMillis = mDate.getTime() + (30 * 60000) - timeNow.getTime();
+
+                            String loker = "Loker " + ds.child("loker").getValue().toString();
+                            String stand = "Stand " + ds.child("stand").getValue().toString().substring(5);
+
+                            HomeModel p = new HomeModel(loker, stand, mTimeLeftInMillis);
+                            list.add(p);
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                        homeAdapter = new HomeAdapter(getActivity(), list);
+                        myHome.setAdapter(homeAdapter);
+                        homeAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
         // Get time now in HomeFragment
         tvDay = root.findViewById(R.id.tvDay);
         tvWelcome = root.findViewById(R.id.tvWelcome);
         tvDate = root.findViewById(R.id.tvDate);
+//        tvCount = root.findViewById(R.id.tvCount);
 
         final Date date;
         Calendar cal = Calendar.getInstance();
 
         SimpleDateFormat sdf = new SimpleDateFormat("HH");
-        DateFormat dateFormat = new SimpleDateFormat("d MMM yyyy");
+        DateFormat dateFormat = new SimpleDateFormat("dd MMMM yyyy");
+        SimpleDateFormat day = new SimpleDateFormat("EEEE");
 
         date = cal.getTime();
 
         String formattedDate = dateFormat.format(date);
+        String formattedDay = day.format(date);
         String hour = sdf.format(new Date());
 
         int hourNow = Integer.valueOf(hour);
 
 //        Log.d("date", String.valueOf(hourNow));
-        tvDay.setText(date.toString().substring(0,3));
+        tvDay.setText(formattedDay);
         tvDate.setText(formattedDate);
 
         if (hourNow >= 3 && hourNow <= 11) {
@@ -97,21 +151,6 @@ public class HomeFragment extends Fragment {
         if (hourNow >= 0 && hourNow <= 2) {
             tvWelcome.setText("Good Night");
         }
-
-        // Get animation
-        alfatogo = AnimationUtils.loadAnimation(getContext(), R.anim.alfatogo);
-        alfatogotwo = AnimationUtils.loadAnimation(getContext(), R.anim.alfatogotwo);
-        alfatogothree = AnimationUtils.loadAnimation(getContext(), R.anim.alfatogothree);
-
-        tvGuideTitle = root.findViewById(R.id.tvGuideTitle);
-        tvGuideSubTitle = root.findViewById(R.id.tvGuideSubtitle);
-        ivGuide = root.findViewById(R.id.ivGuide);
-        btnGuide = root.findViewById(R.id.btnGuide);
-
-        ivGuide.startAnimation(alfatogo);
-        tvGuideTitle.startAnimation(alfatogotwo);
-        tvGuideSubTitle.startAnimation(alfatogotwo);
-        btnGuide.startAnimation(alfatogothree);
 
         return root;
     }

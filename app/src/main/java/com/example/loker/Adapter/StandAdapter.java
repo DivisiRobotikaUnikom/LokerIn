@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,6 +21,7 @@ import com.example.loker.Fragment.Booking.BookingLokerFragment;
 import com.example.loker.MainActivity;
 import com.example.loker.Model.StandModel;
 import com.example.loker.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -44,6 +46,8 @@ public class StandAdapter extends RecyclerView.Adapter<StandAdapter.MyViewHolder
         holder.tvNama.setText(myStand.get(position).getNama());
         holder.tvLokasi.setText(myStand.get(position).getLokasi());
         holder.tvHarga.setText(myStand.get(position).getHarga());
+        String url = myStand.get(position).getUrl_image();
+        Picasso.with(holder.imgStand.getContext()).load(url).placeholder(R.drawable.ic_person_black_24dp).into(holder.imgStand);
 
         final String getNama = myStand.get(position).getNama();
 
@@ -68,12 +72,14 @@ public class StandAdapter extends RecyclerView.Adapter<StandAdapter.MyViewHolder
     class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView tvNama, tvLokasi, tvHarga;
+        ImageView imgStand;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             tvNama = itemView.findViewById(R.id.tvNama);
             tvLokasi = itemView.findViewById(R.id.tvLokasi);
             tvHarga = itemView.findViewById(R.id.tvHarga);
+            imgStand = itemView.findViewById(R.id.imgStand);
         }
     }
 

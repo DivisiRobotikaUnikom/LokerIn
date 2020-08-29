@@ -66,24 +66,23 @@ public class HistoryFragment extends Fragment {
         myHistory = root.findViewById(R.id.myHistory);
         myHistory.setLayoutManager(new LinearLayoutManager(getActivity()));
         list = new ArrayList<HistoryModel>();
-        db.booking.addValueEventListener(new ValueEventListener() {
+        db.booking.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                    DatabaseInit db = new DatabaseInit();
+                    FirebaseUser user = db.mAuth.getCurrentUser();
+                    if (ds.child("uid").getValue().toString().equals(user.getUid())) {
+                        if (ds.child("status").getValue().toString().equals("Finish")) {
+                            i++;
+                            String date = ds.child("time").getValue().toString();
 
-                    if (ds.child("status").getValue().toString().equals("Finish")) {
-                        DatabaseInit db = new DatabaseInit();
-                        i++;
-                        Calendar cal = Calendar.getInstance();
-                        Long res = Long.parseLong(ds.child("time").getValue().toString());
-                        cal.setTimeInMillis(res * 1000);
-                        String date = DateFormat.format("dd-MM-yyyy hh:mm:ss", cal).toString();
+                            String loker = "Loker " + ds.child("loker").getValue().toString();
+                            String stand = "Stand " + ds.child("stand").getValue().toString().substring(5);
 
-                        String loker = "Loker " + ds.child("loker").getValue().toString();
-                        String stand = "Stand " + ds.child("stand").getValue().toString().substring(5);
-
-                        HistoryModel p = new HistoryModel(loker, date, stand);
-                        list.add(p);
+                            HistoryModel p = new HistoryModel(loker, date, stand);
+                            list.add(p);
+                        }
                     }
                 }
                 historyAdapter = new HistoryAdapter(getActivity(), list);

@@ -44,7 +44,6 @@
 
             <TextView
                 android:id="@+id/tvJumlah"
-                android:text="12 items"
                 android:textSize="14sp"
                 android:textColor="#FFFFFF"
                 android:layout_width="wrap_content"
