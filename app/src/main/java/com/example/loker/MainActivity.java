@@ -171,6 +171,7 @@ public class MainActivity extends FragmentActivity {
                                                 Calendar calendar = Calendar.getInstance();
                                                 String tss = DateFormat.format("EEE, dd-MM-yyyy HH:mm:ss", calendar.getTime()).toString();
                                                 db.booking.child(ds.getKey()).child("time").setValue(tss);
+                                                db.stand.child(ds.child("stand").getValue().toString()).child(ds.child("loker").getValue().toString()).child("status").setValue("not available");
                                         }
                                     } else {
                                         if (datang == false) {

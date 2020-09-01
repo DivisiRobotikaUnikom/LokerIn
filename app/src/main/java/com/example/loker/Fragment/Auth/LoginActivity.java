@@ -57,7 +57,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         btnLogin.setOnClickListener(LoginActivity.this);
 
         final FirebaseUser user = db.mAuth.getCurrentUser();
-        ProgressDialog.show(this, "Loading", "Harap menunggu...");
         if (user != null) {
             db.users.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -69,6 +68,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         finish();
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
                     }
+                    ProgressDialog.show(LoginActivity.this, "Loading", "Harap menunggu...");
                 }
 
                 @Override

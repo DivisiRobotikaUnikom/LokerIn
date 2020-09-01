@@ -154,4 +154,12 @@ public class HomeFragment extends Fragment {
 
         return root;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (homeAdapter != null) {
+            homeAdapter.notifyDataSetChanged();
+        }
+    }
 }
