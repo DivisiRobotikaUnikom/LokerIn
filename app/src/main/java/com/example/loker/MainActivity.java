@@ -63,7 +63,43 @@ public class MainActivity extends FragmentActivity {
         nav.setSpaceOnClickListener(new SpaceOnClickListener() {
             @Override
             public void onCentreButtonClick() {
-                scanCode();
+                final DatabaseInit db = new DatabaseInit();
+                db.booking.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (click == true) {
+                            int i = 0;
+                            boolean check = false;
+                            for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                                i++;
+                                FirebaseUser user = db.mAuth.getCurrentUser();
+                                if (user.getUid().equals(ds.child("uid").getValue().toString()) && ds.child("status").getValue().toString().equals("Booking")) {
+                                    scanCode();
+                                    check = true;
+                                } else {
+                                    check = false;
+                                }
+                            }
+                            if (check == false) {
+                                new android.app.AlertDialog.Builder(MainActivity.this)
+                                        .setTitle("Warning")
+                                        .setMessage("Anda belum booking!")
+                                        .setCancelable(false)
+                                        .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int i) {
+                                                dialogInterface.dismiss();
+                                            }
+                                        }).show();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
                 click = true;
             }
 
@@ -129,12 +165,18 @@ public class MainActivity extends FragmentActivity {
         integrator.initiateScan();
     }
 
+    private boolean cekBooking() {
+        boolean cek = false;
+
+        return cek;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable final Intent data) {
         final IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (result != null) {
             if (result.getContents() != null) {
-                DatabaseInit db = new DatabaseInit();
+                final DatabaseInit db = new DatabaseInit();
 
                 db.booking.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -149,7 +191,6 @@ public class MainActivity extends FragmentActivity {
                         if (click == true) {
                             for (DataSnapshot ds : dataSnapshot.getChildren()) {
                                 i++;
-                                DatabaseInit db = new DatabaseInit();
                                 FirebaseUser user = db.mAuth.getCurrentUser();
 
                                 if (user.getUid().equals(ds.child("uid").getValue().toString()) && datang == false) {
@@ -157,14 +198,9 @@ public class MainActivity extends FragmentActivity {
                                     String stand = res[0].toLowerCase() + res[1];
 
                                     if (stand.equals(ds.child("stand").getValue().toString())) {
-                                        if (ds.child("status").getValue().toString().equals("Datang")) {
-                                            if (i == count) {
+                                        if (ds.child("status").getValue().equals("Booking")) {
+                                                datang = true;
                                                 hitung = 1;
-                                                datang = true;
-                                            }
-                                        } else if (ds.child("status").getValue().equals("Booking")) {
-                                                datang = true;
-                                                hitung = 4;
                                                 loker = ds.child("loker").getValue().toString();
                                                 db.daftar.child(ds.child("stand").getValue().toString()).child("id").setValue(ds.child("loker").getValue().toString());
                                                 db.booking.child(ds.getKey()).child("status").setValue("Datang");
@@ -177,14 +213,8 @@ public class MainActivity extends FragmentActivity {
                                         if (datang == false) {
                                             hitung = 2;
                                         } else {
-                                            hitung = 4;
+                                            hitung = 1;
                                         }
-                                    }
-                                } else {
-                                    if (datang == false) {
-                                        hitung = 3;
-                                    } else {
-                                        hitung = 4;
                                     }
                                 }
                             }
@@ -193,15 +223,7 @@ public class MainActivity extends FragmentActivity {
                                 builder.setTitle("Warning")
                                         .setMessage("Anda Salah Stand!")
                                         .setCancelable(true);
-                            } else if (hitung == 3) {
-                                builder.setTitle("Warning")
-                                        .setMessage("Anda Belum Booking!")
-                                        .setCancelable(true);
-                            } else if (hitung == 1) {
-                                builder.setTitle("Warning")
-                                        .setMessage("Anda Sudah Mengkonfirmasi Kedatangan di Semua Loker!")
-                                        .setCancelable(true);
-                            } else if (hitung == 4){
+                            } else if (hitung == 1){
                                 builder.setTitle("Success");
                                 builder.setMessage("Silahkan Tempel Jari Anda di Sensor Fingerprint untuk Loker " + loker + "!");
                                 builder.setCancelable(true);

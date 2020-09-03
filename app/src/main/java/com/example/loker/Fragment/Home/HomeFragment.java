@@ -130,7 +130,7 @@ public class HomeFragment extends Fragment {
         date = cal.getTime();
 
         String formattedDate = dateFormat.format(date);
-        String formattedDay = day.format(date);
+        String formattedDay = day.format(date).substring(0,3);
         String hour = sdf.format(new Date());
 
         int hourNow = Integer.valueOf(hour);
