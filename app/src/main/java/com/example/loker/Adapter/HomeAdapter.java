@@ -34,6 +34,9 @@ public class HomeAdapter extends RecyclerView.Adapter <HomeAdapter.MyViewHolder>
     private CountDownTimer countDownTimer;
     private long mTimeLeftInMillis;
 
+    public HomeAdapter() {
+    }
+
     public HomeAdapter(Context context, ArrayList<HomeModel> myHome) {
         this.context = context;
         this.myHome = myHome;
@@ -107,31 +110,6 @@ public class HomeAdapter extends RecyclerView.Adapter <HomeAdapter.MyViewHolder>
                                     dialogInterface.dismiss();
                                 }
                             });
-                    DatabaseInit db = new DatabaseInit();
-                    final FirebaseUser user = db.mAuth.getCurrentUser();
-                    db.booking.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                                if (ds.child("uid").getValue().toString().equals(user.getUid())) {
-                                    if (ds.child("status").getValue().toString().equals("Booking")) {
-                                        String stand = "stand" + holder.tvStand.getText().toString().substring(6);
-                                        String loker = holder.tvLoker.getText().toString().substring(6);
-                                        if (ds.child("stand").getValue().toString().equals(stand) && ds.child("loker").getValue().toString().equals(loker)) {
-                                            DatabaseInit db = new DatabaseInit();
-                                            db.booking.child(ds.getKey()).removeValue();
-                                            db.stand.child(stand).child(loker).child("status").setValue("available");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
                 }
                 builder.show();
             }

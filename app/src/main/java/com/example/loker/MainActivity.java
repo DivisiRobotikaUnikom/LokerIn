@@ -2,16 +2,31 @@ package com.example.loker;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
+import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
@@ -24,7 +39,9 @@ import com.example.loker.Fragment.Auth.LoginActivity;
 import com.example.loker.Fragment.Booking.BookingFragment;
 import com.example.loker.Fragment.History.HistoryFragment;
 import com.example.loker.Fragment.Home.HomeFragment;
+import com.example.loker.Notification.App;
 import com.example.loker.Scan.CaptureAct;
+import com.example.loker.Service.BackgroundService;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,18 +53,31 @@ import com.luseen.spacenavigation.SpaceNavigationView;
 import com.luseen.spacenavigation.SpaceOnClickListener;
 import com.squareup.picasso.Picasso;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Objects;
 
 public class MainActivity extends FragmentActivity {
 
-    private boolean exit = false;
     private boolean click = false;
-    SpaceNavigationView nav;
+    private SpaceNavigationView nav;
+    private CountDownTimer countDownTimer;
+    private long[] mTimeLeftInMillis, timeInMillis;
+    Handler customHandler = new Handler();
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    private String[] loker, stand;
+    int length = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        customHandler.removeCallbacks(updateTimerThread);
+
+        startService(new Intent(this, BackgroundService.class));
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         nav = findViewById(R.id.space);
@@ -165,10 +195,10 @@ public class MainActivity extends FragmentActivity {
         integrator.initiateScan();
     }
 
-    private boolean cekBooking() {
-        boolean cek = false;
-
-        return cek;
+    @Override
+    protected void onStart() {
+        super.onStart();
+        customHandler.removeCallbacksAndMessages(updateTimerThread);
     }
 
     @Override
@@ -185,17 +215,14 @@ public class MainActivity extends FragmentActivity {
                         int hitung = 0;
                         boolean datang = false;
                         String loker = "";
-                        int i = 0;
-                        long count = dataSnapshot.getChildrenCount();
 
                         if (click == true) {
                             for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                                i++;
-                                FirebaseUser user = db.mAuth.getCurrentUser();
+                                final FirebaseUser user = db.mAuth.getCurrentUser();
 
                                 if (user.getUid().equals(ds.child("uid").getValue().toString()) && datang == false) {
                                     String[] res = result.getContents().split("\\s+");
-                                    String stand = res[0].toLowerCase() + res[1];
+                                    final String stand = res[0].toLowerCase() + res[1];
 
                                     if (stand.equals(ds.child("stand").getValue().toString())) {
                                         if (ds.child("status").getValue().equals("Booking")) {
@@ -208,6 +235,32 @@ public class MainActivity extends FragmentActivity {
                                                 String tss = DateFormat.format("EEE, dd-MM-yyyy HH:mm:ss", calendar.getTime()).toString();
                                                 db.booking.child(ds.getKey()).child("time").setValue(tss);
                                                 db.stand.child(ds.child("stand").getValue().toString()).child(ds.child("loker").getValue().toString()).child("status").setValue("not available");
+                                                db.booking.child(ds.getKey()).child("hour").setValue("1");
+
+                                                db.users.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                    @Override
+                                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                        final int saldo = Integer.parseInt(dataSnapshot.child("saldo").getValue().toString());
+
+                                                        db.stand.child(stand).child("harga").addListenerForSingleValueEvent(new ValueEventListener() {
+                                                            @Override
+                                                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                                                int harga = Integer.parseInt(dataSnapshot.getValue().toString());
+                                                                db.users.child(user.getUid()).child("saldo").setValue(saldo - harga);
+                                                            }
+
+                                                            @Override
+                                                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                            }
+                                                        });
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                                    }
+                                                });
                                         }
                                     } else {
                                         if (datang == false) {
@@ -254,4 +307,111 @@ public class MainActivity extends FragmentActivity {
             click = false;
         }
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        final DatabaseInit db = new DatabaseInit();
+        final FirebaseUser user = db.mAuth.getCurrentUser();
+
+        if (user != null) {
+            db.booking.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    int i = 0;
+                    loker = new String[Long.bitCount(dataSnapshot.getChildrenCount())];
+                    stand = new String[Long.bitCount(dataSnapshot.getChildrenCount())];
+                    mTimeLeftInMillis = new long[Long.bitCount(dataSnapshot.getChildrenCount())];
+                    timeInMillis = new long[Long.bitCount(dataSnapshot.getChildrenCount())];
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        if (ds.child("uid").getValue().toString().equals(user.getUid())) {
+                            try {
+                                if (ds.child("status").getValue().toString().equals("Datang")) {
+                                    length++;
+                                    String[] date = ds.child("time").getValue().toString().split("\\s+");
+                                    loker[i] = ds.child("loker").getValue().toString();
+                                    stand[i] = ds.child("stand").getValue().toString();
+
+                                    Date mDate = simpleDateFormat.parse(date[1] + " " + date[2]);
+                                    mTimeLeftInMillis[i] = mDate.getTime();
+                                    customHandler.postDelayed(updateTimerThread, 0);
+                                    i++;
+                                }
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+    }
+
+    private void sendNotifications(int i, String message) {
+        App app = new App(getApplicationContext());
+        app.onCreate();
+        Intent ActivityIntent = new Intent(this, LoginActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this,
+                0, ActivityIntent, 0);
+
+        Notification mBuilder =
+                new NotificationCompat.Builder(this, App.CHANNEL_ID)
+                        .setSmallIcon(R.drawable.logo)
+                        .setContentTitle("Penyewaan Loker " + loker[i] + " di Stand " + stand[i].substring(5))
+                        .setContentText(message)
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setAutoCancel(true)
+                        .setContentIntent(contentIntent)
+                        .setOngoing(true)
+                        .build()
+                ;
+
+        NotificationManagerCompat mManager = NotificationManagerCompat.from(this);
+        mManager.notify(i, mBuilder);
+    }
+
+    Runnable updateTimerThread = new Runnable() {
+        int i = 0;
+        @RequiresApi(api = Build.VERSION_CODES.Q)
+        @Override
+        public void run() {
+            try {
+                ActivityManager am = (ActivityManager)getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+                ComponentName cn = null;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    cn = am.getRunningTasks(1).get(0).topActivity;
+                } else {
+                    cn = am.getRunningTasks(1).get(0).topActivity;
+                }
+
+                if (cn.toShortString().equals("{com.example.loker/com.example.loker.MainActivity}")) {
+                    customHandler.removeCallbacks(updateTimerThread);
+                } else {
+                    if (i < length) {
+                        Calendar calendar = Calendar.getInstance();
+                        String tss = android.text.format.DateFormat.format("dd-MM-yyyy HH:mm:ss", calendar.getTime()).toString();
+                        Date timeNow = simpleDateFormat.parse(tss);
+                        timeInMillis[i] = timeNow.getTime() - mTimeLeftInMillis[i];
+                        int secs = (int) (timeInMillis[i] / 1000);
+                        int min = secs / 60;
+                        int hour = min / 60;
+                        min %= 60;
+                        sendNotifications(i, String.format("%02d", hour) + ":" + String.format("%02d", min) + ":00");
+                        customHandler.postDelayed(updateTimerThread, 60000);
+                        i++;
+                    } else {
+                        i = 0;
+                        customHandler.postDelayed(updateTimerThread, 60000);
+                    }
+                }
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+    };
 }

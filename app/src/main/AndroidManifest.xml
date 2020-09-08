@@ -16,6 +16,7 @@
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <service android:name=".Service.BackgroundService" android:exported="false"></service>
         <activity android:name=".Fragment.Auth.TutorialActivity"></activity>
         <activity android:name=".Fragment.Auth.GuideActivity" />
         <activity android:name=".Fragment.Auth.LoginActivity">

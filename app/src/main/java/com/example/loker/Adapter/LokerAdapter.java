@@ -27,6 +27,9 @@ import com.example.loker.MainActivity;
 import com.example.loker.Model.LokerModel;
 import com.example.loker.R;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -70,61 +73,85 @@ public class LokerAdapter extends RecyclerView.Adapter<LokerAdapter.MyViewHolder
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                if (holder.tvStatus.getText().toString().equals("Available")) {
-                        builder.setMessage("Ingin Menyewa Loker Ini?")
-                        .setTitle("Sewa Loker")
-                        .setCancelable(false)
-                        .setPositiveButton("Sewa", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                DatabaseInit db = new DatabaseInit();
-                                FirebaseUser user = db.mAuth.getCurrentUser();
-                                Calendar calendar = Calendar.getInstance();
-                                String tss = DateFormat.format("EEE, dd-MM-yyyy HH:mm:ss", calendar.getTime()).toString();
-                                String ts = Long.toString(System.currentTimeMillis() * 1000);
+                final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                DatabaseInit db = new DatabaseInit();
+                FirebaseUser user = db.mAuth.getCurrentUser();
+                db.users.child(user.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if (!dataSnapshot.hasChild("saldo") || dataSnapshot.child("saldo").getValue().toString().equals("0")) {
+                            builder.setMessage("Silahkan Isi Saldo Terlebih Dahulu!")
+                                    .setTitle("Warning Topup")
+                                    .setCancelable(false)
+                                    .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            dialogInterface.dismiss();
+                                        }
+                                    });
+                        } else {
+                            if (holder.tvStatus.getText().toString().equals("Available")) {
+                                builder.setMessage("Ingin Menyewa Loker Ini?")
+                                        .setTitle("Sewa Loker")
+                                        .setCancelable(false)
+                                        .setPositiveButton("Sewa", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int i) {
+                                                DatabaseInit db = new DatabaseInit();
+                                                FirebaseUser user = db.mAuth.getCurrentUser();
+                                                Calendar calendar = Calendar.getInstance();
+                                                String tss = DateFormat.format("EEE, dd-MM-yyyy HH:mm:ss", calendar.getTime()).toString();
+                                                String ts = Long.toString(System.currentTimeMillis() * 1000);
 
-                                String[] stand = res.split("\\s+");
-                                String[] loker = holder.tvId.getText().toString().split("\\s+");
+                                                String[] stand = res.split("\\s+");
+                                                String[] loker = holder.tvId.getText().toString().split("\\s+");
 
-                                db.booking.child(user.getUid() + ts).child("uid").setValue(user.getUid());
-                                db.booking.child(user.getUid() + ts).child("stand").setValue("stand" + stand[1]);
-                                db.booking.child(user.getUid() + ts).child("loker").setValue(loker[1]);
-                                db.booking.child(user.getUid() + ts).child("status").setValue("Booking");
-                                db.booking.child(user.getUid() + ts).child("time").setValue(tss);
+                                                db.booking.child(user.getUid() + ts).child("uid").setValue(user.getUid());
+                                                db.booking.child(user.getUid() + ts).child("stand").setValue("stand" + stand[1]);
+                                                db.booking.child(user.getUid() + ts).child("loker").setValue(loker[1]);
+                                                db.booking.child(user.getUid() + ts).child("status").setValue("Booking");
+                                                db.booking.child(user.getUid() + ts).child("time").setValue(tss);
 
-                                db.stand.child("stand" + stand[1]).child(loker[1]).child("status").setValue("booked");
+                                                db.stand.child("stand" + stand[1]).child(loker[1]).child("status").setValue("booked");
 
-                                MainActivity activity = (MainActivity) view.getContext();
-                                Fragment fragment = new BookingFragment();
-                                activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
-                                activity.getSupportFragmentManager().popBackStack();
-                                Toast.makeText(view.getContext(), "Booking Berhasil!", Toast.LENGTH_SHORT).show();
+                                                MainActivity activity = (MainActivity) view.getContext();
+                                                Fragment fragment = new BookingFragment();
+//                                activity.getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+                                                activity.getSupportFragmentManager().popBackStack();
+                                                Toast.makeText(view.getContext(), "Booking Berhasil!", Toast.LENGTH_SHORT).show();
+                                            }
+                                        })
+                                        .setNegativeButton("Batal", null);
+                            } else if (holder.tvStatus.getText().toString().equals("Not Available")) {
+                                builder.setMessage("Loker Tidak Tersedia")
+                                        .setTitle("Sewa Loker")
+                                        .setCancelable(false)
+                                        .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int i) {
+                                                dialogInterface.dismiss();
+                                            }
+                                        });
+                            } else {
+                                builder.setMessage("Loker Sudah Terbooking")
+                                        .setTitle("Sewa Loker")
+                                        .setCancelable(false)
+                                        .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int i) {
+                                                dialogInterface.dismiss();
+                                            }
+                                        });
                             }
-                        })
-                        .setNegativeButton("Batal", null);
-                } else if (holder.tvStatus.getText().toString().equals("Not Available")) {
-                    builder.setMessage("Loker Tidak Tersedia")
-                            .setTitle("Sewa Loker")
-                            .setCancelable(false)
-                            .setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    dialogInterface.dismiss();
-                                }
-                            });
-                } else {
-                    builder.setMessage("Loker Sudah Terbooking")
-                            .setTitle("Sewa Loker")
-                            .setCancelable(false)
-                            .setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    dialogInterface.dismiss();
-                                }
-                            });
-                }
-                builder.show();
+                        }
+                        builder.show();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
             }
         });
     }

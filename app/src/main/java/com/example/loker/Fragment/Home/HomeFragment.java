@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -49,6 +50,7 @@ public class HomeFragment extends Fragment {
     RecyclerView myHome;
     ArrayList<HomeModel> list;
     HomeAdapter homeAdapter;
+    SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -86,10 +88,11 @@ public class HomeFragment extends Fragment {
                     if (ds.child("uid").getValue().toString().equals(user.getUid()) && ds.child("status").getValue().toString().equals("Booking")) {
                         try {
                             String[] date = ds.child("time").getValue().toString().split("\\s+");
-                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
                             Calendar calendar = Calendar.getInstance();
-                            String tss = android.text.format.DateFormat.format("HH:mm:ss", calendar.getTime()).toString();
-                            Date mDate = simpleDateFormat.parse(date[2]);
+                            String tss = android.text.format.DateFormat.format("dd-MM-yyyy HH:mm:ss", calendar.getTime()).toString();
+
+                            Date mDate = simpleDateFormat.parse(date[1] + " " + date[2]);
                             Date timeNow = simpleDateFormat.parse(tss);
                             long mTimeLeftInMillis = mDate.getTime() + (30 * 60000) - timeNow.getTime();
 
@@ -111,6 +114,57 @@ public class HomeFragment extends Fragment {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+
+        swipeRefreshLayout = root.findViewById(R.id.swipe);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                list.clear();
+                final DatabaseInit db = new DatabaseInit();
+                db.booking.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        FirebaseUser user = db.mAuth.getCurrentUser();
+                        if (ds.child("uid").getValue().toString().equals(user.getUid()) && ds.child("status").getValue().toString().equals("Booking")) {
+                            try {
+                                String[] date = ds.child("time").getValue().toString().split("\\s+");
+                                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+                                Calendar calendar = Calendar.getInstance();
+                                String tss = android.text.format.DateFormat.format("dd-MM-yyyy HH:mm:ss", calendar.getTime()).toString();
+
+                                Date mDate = simpleDateFormat.parse(date[1] + " " + date[2]);
+                                Date timeNow = simpleDateFormat.parse(tss);
+                                long mTimeLeftInMillis = mDate.getTime() + (30 * 60000) - timeNow.getTime();
+
+                                String loker = "Loker " + ds.child("loker").getValue().toString();
+                                String stand = "Stand " + ds.child("stand").getValue().toString().substring(5);
+
+                                HomeModel p = new HomeModel(loker, stand, mTimeLeftInMillis);
+                                list.add(p);
+                                homeAdapter.notifyDataSetChanged();
+                            } catch (ParseException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+        myHome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                homeAdapter.notifyDataSetChanged();
             }
         });
 
@@ -162,4 +216,6 @@ public class HomeFragment extends Fragment {
             homeAdapter.notifyDataSetChanged();
         }
     }
+
+
 }
